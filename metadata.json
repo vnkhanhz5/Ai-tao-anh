@@ -1,0 +1,5 @@
+{
+  "name": "AI tao anh",
+  "description": "An application to professionally enhance and edit photos using AI. Upload an image, provide an editing prompt, and let Gemini transform your picture with a more professional look and feel.",
+  "requestFramePermissions": []
+}
