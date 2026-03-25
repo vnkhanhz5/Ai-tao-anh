@@ -57,15 +57,11 @@ const REFLECTION_LEVELS = [
 ];
 
 const App: React.FC = () => {
-  const [hasApiKey, setHasApiKey] = useState<boolean>(false);
-  const [isCheckingKey, setIsCheckingKey] = useState<boolean>(true);
-  
   const [bgImage, setBgImage] = useState<string | null>(DEFAULT_SCENIC_BG);
   const [bgMimeType, setBgMimeType] = useState<string>('image/png');
   const [products, setProducts] = useState<ProductItem[]>([]);
   
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
-  const [quality, setQuality] = useState<string>('1K');
   const [cameraAngle, setCameraAngle] = useState<string>('45');
   const [reflection, setReflection] = useState<string>('Natural');
   const [material, setMaterial] = useState<string>('Glossy');
@@ -81,37 +77,6 @@ const App: React.FC = () => {
   
   const productInputRef = useRef<HTMLInputElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const checkKey = async () => {
-      try {
-        const win = window as any;
-        if (win.aistudio?.hasSelectedApiKey) {
-          const hasKey = await win.aistudio.hasSelectedApiKey();
-          setHasApiKey(hasKey);
-        } else if (process.env.API_KEY) {
-          setHasApiKey(true);
-        }
-      } catch (e) { 
-        console.error("API Key check error", e); 
-      } finally { 
-        setIsCheckingKey(false); 
-      }
-    };
-    checkKey();
-  }, []);
-
-  const handleConnectKey = async () => {
-    const win = window as any;
-    if (win.aistudio?.openSelectKey) {
-      try { 
-        await win.aistudio.openSelectKey(); 
-        setHasApiKey(true); 
-      } catch (e) { 
-        console.error(e); 
-      }
-    }
-  };
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -165,7 +130,7 @@ const App: React.FC = () => {
         products: productSources,
         refinement: refinementPrompt,
         aspectRatio,
-        quality,
+        quality: '1K',
         cameraAngle,
         material,
         reflection,
@@ -181,9 +146,6 @@ const App: React.FC = () => {
       }
     } catch (err: any) {
       setErrorMessage(err.message);
-      if (err.message && err.message.includes("not found")) {
-        setHasApiKey(false);
-      }
     } finally { 
       setIsProcessing(false); 
     }
@@ -193,48 +155,8 @@ const App: React.FC = () => {
     setProducts(prev => prev.filter(p => p.id !== id));
   };
 
-  if (isCheckingKey) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <SpinnerIcon className="animate-spin w-8 h-8 text-white" />
-      </div>
-    );
-  }
-
-  if (!hasApiKey) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full space-y-8 bg-[#1a1a1a] p-10 rounded-3xl border border-white/10 shadow-2xl">
-          <div className="space-y-4">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-purple-600 mb-4">
-              <KeyIcon className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight">Kết nối Gemini Pro</h1>
-            <p className="text-gray-400">
-              Để sử dụng tính năng Visual Staging chất lượng cao, vui lòng kết nối API Key đã trả phí.
-            </p>
-          </div>
-          
-          <div className="space-y-4 pt-4">
-            <button
-              onClick={handleConnectKey}
-              className="w-full py-4 px-6 rounded-xl bg-white text-black font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group"
-            >
-              <span>Kết nối API Key</span>
-              <MagicWandIcon className="w-4 h-4" />
-            </button>
-            <a
-              href="https://ai.google.dev/gemini-api/docs/billing"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              Tìm hiểu về thanh toán Gemini API →
-            </a>
-          </div>
-        </div>
-      </div>
-    );
+  if (isProcessing && false) { // Placeholder to keep structure if needed, but we'll remove the key checks
+    return null;
   }
 
   return (
@@ -425,21 +347,6 @@ const App: React.FC = () => {
                     ))}
                   </div>
                 </div>
-
-                <div className="space-y-2">
-                  <span className="text-[10px] text-gray-500 font-bold">CHẤT LƯỢNG</span>
-                  <div className="flex flex-wrap gap-2">
-                    {QUALITY_OPTIONS.map(q => (
-                      <button
-                        key={q.value}
-                        onClick={() => setQuality(q.value)}
-                        className={`px-3 py-1.5 rounded-lg text-xs transition-all ${quality === q.value ? 'bg-white text-black font-bold' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}
-                      >
-                        {q.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -556,7 +463,7 @@ const App: React.FC = () => {
                <div className="flex items-center gap-4">
                  <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    <span>Gemini 3 Pro Active</span>
+                    <span>Gemini 2.5 Flash Active</span>
                  </div>
                  <span>|</span>
                  <span>Chế độ: {stagingMode === 'replace' ? 'THAY THẾ' : 'THÊM MỚI'}</span>

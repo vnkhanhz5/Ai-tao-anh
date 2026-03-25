@@ -118,11 +118,10 @@ export const editImage = async (params: RenderParams): Promise<string | null> =>
     parts.push({ text: coreInstruction });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-image-preview',
+      model: 'gemini-2.5-flash-image',
       contents: { parts: parts },
       config: {
         imageConfig: {
-            imageSize: params.quality as any,
             aspectRatio: params.aspectRatio as any
         }
       },
